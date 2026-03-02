@@ -53,6 +53,19 @@ npm install
 npm run dev
 ```
 
+
+## Design Notes
+
+- **FastAPI Backend**: Chosen for speed, async support, and automatic OpenAPI docs. Enables rapid development and robust validation.
+- **PostgreSQL for Persistence**: Ensures durability, ACID compliance, and global consistency for scores. Scales well for large datasets.
+- **Redis for Leaderboard Caching**: Uses sorted sets for fast top-N queries and real-time rank lookups. Reduces database load and latency.
+- **Next.js Frontend**: React-based, supports SSR/SSG for performance and SEO. Discord-style UI for familiar gamer experience.
+- **Input Normalization**: All game/user IDs are lowercased and trimmed to prevent duplicates and ensure consistent lookups.
+- **Error Handling & Validation**: Strict payload validation and clear error messages for reliability and security.
+- **Docker Compose**: Simplifies local development and deployment, ensuring consistent environments across dev, CI, and production.
+- **API Gateway (optional)**: Can be added for rate limiting, auth, and routing in production.
+- **CI Pipeline**: Automated tests and linting for code quality and reliability.
+
 ## Project Structure
 
 ```
