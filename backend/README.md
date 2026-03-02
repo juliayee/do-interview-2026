@@ -1,3 +1,28 @@
+
+# Backend (FastAPI)
+
+## Quickstart
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Start the API server:
+   ```bash
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+3. API docs: http://localhost:8000/docs
+
+## Features
+...existing code...
+
+## API Docs
+http://localhost:8000/docs
+
+## Testing
+```bash
+pytest
+```
+
 # Gaming Leaderboard Backend
 
 FastAPI service for managing real-time gaming leaderboards using a hybrid **PostgreSQL + Redis** architecture. PostgreSQL provides durable persistence for global leaderboards, while Redis caches rankings for lightning-fast reads.

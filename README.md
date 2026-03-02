@@ -1,14 +1,13 @@
+
 # Gaming Leaderboard Service
 
-A production-ready REST API for managing global gaming leaderboards across multiple games. Built with **FastAPI**, **PostgreSQL** (persistent storage), **Redis** (regional caching), and **Next.js**.
-
-## Quick Start
+## Quickstart
 
 ### Prerequisites
-- Docker & Docker Compose (easiest), OR
+- Docker & Docker Compose (recommended), OR
 - Python 3.11+, Node 20+, PostgreSQL 16+, Redis 7+
 
-### Option 1: Docker Compose (Recommended)
+### Option 1: Docker Compose
 ```bash
 docker-compose up
 ```

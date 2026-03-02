@@ -4,17 +4,32 @@
 
 ```mermaid
 flowchart TD
-  User[User / Frontend (Next.js)] -->|REST API| Backend[FastAPI Backend]
-  Backend -->|Leaderboard ops| Redis[(Redis Sorted Sets)]
+  User[User / Frontend (Next.js)] -->|REST API| Backend[FastAPI]
+  Backend -->|Leaderboard ops| Redis[(Sorted Sets)]
   Backend -->|Persistence| Postgres[(PostgreSQL)]
-  Redis -->|Cache| Backend
-  Backend -->|Immediate neighbors| Redis
-  Backend -->|Max score update| Redis
-  Backend -->|Health check| Redis
-  Backend -->|Health check| Postgres
-  Backend -->|Push leaderboard| Frontend
-  Frontend -->|Display leaderboard| User
-  note right of Backend: User context endpoint returns only immediate above/below scores\nNo radius parameter
+    C[Client (Browser/App)] <--> GW[API Gateway]
+    GW <--> BE[Backend (FastAPI)]
+    BE <--> R[Redis]
+    BE <--> DB[PostgreSQL]
+    C <--> F[Frontend (Next.js)]
+    F <--> GW
+
+    %% Descriptions
+    C:::client
+    F:::frontend
+    GW:::gateway
+    BE:::backend
+    R:::redis
+    DB:::db
+
+    classDef client fill:#e3f2fd,stroke:#2196f3;
+    classDef frontend fill:#f3e5f5,stroke:#8e24aa;
+    classDef gateway fill:#fffde7,stroke:#fbc02d;
+    classDef backend fill:#e8f5e9,stroke:#43a047;
+    classDef redis fill:#ffebee,stroke:#d32f2f;
+    classDef db fill:#ede7f6,stroke:#5e35b1;
+  ```
+  note right of Backend: All game/user IDs are case-insensitive and trimmed
 ```
     │   Backend API (FastAPI) - Port 8000               │
     │                                                    │

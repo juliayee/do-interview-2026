@@ -1,3 +1,26 @@
+
+# Frontend (Next.js)
+
+## Quickstart
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the frontend:
+   ```bash
+   npm run dev
+   ```
+3. UI: http://localhost:3000
+
+## Features
+ - Discord-style UI for leaderboard and user context
+ - Case-insensitive, trimmed game/user IDs
+ - Error handling and input validation
+
+## Usage
+ - Submit scores, view top leaderboard, user context
+ - All game/user IDs normalized
+
 # Gaming Leaderboard Frontend
 
 Next.js TypeScript UI for the Gaming Leaderboard API. Submit scores, view rankings, and check user context.
