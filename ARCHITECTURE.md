@@ -2,33 +2,30 @@
 
 ## System Architecture Diagram
 
-```mermaid
-flowchart TD
-  User[User / Frontend (Next.js)] -->|REST API| Backend[FastAPI]
-  Backend -->|Leaderboard ops| Redis[(Sorted Sets)]
-  Backend -->|Persistence| Postgres[(PostgreSQL)]
-    C[Client (Browser/App)] <--> GW[API Gateway]
-    GW <--> BE[Backend (FastAPI)]
-    BE <--> R[Redis]
-    BE <--> DB[PostgreSQL]
-    C <--> F[Frontend (Next.js)]
-    F <--> GW
+System Architecture Diagram (Text)
 
-    %% Descriptions
-    C:::client
-    F:::frontend
-    GW:::gateway
-    BE:::backend
-    R:::redis
-    DB:::db
+  [Client / Browser]
+         |
+         v
+  [Frontend (Next.js)] <-----> [API Gateway] <-----> [Backend (FastAPI)]
+         |                          |                      |
+         |                          |                      |
+         +--------------------------+                      |
+         |                                                 |
+         v                                                 v
+  [User]                                         [Redis (Sorted Sets)]
+                                                      |
+                                                      v
+                                              [PostgreSQL]
 
-    classDef client fill:#e3f2fd,stroke:#2196f3;
-    classDef frontend fill:#f3e5f5,stroke:#8e24aa;
-    classDef gateway fill:#fffde7,stroke:#fbc02d;
-    classDef backend fill:#e8f5e9,stroke:#43a047;
-    classDef redis fill:#ffebee,stroke:#d32f2f;
-    classDef db fill:#ede7f6,stroke:#5e35b1;
-  ```
+Key Flows:
+- Client interacts with Frontend (Next.js) for UI
+- Frontend communicates with API Gateway for API requests
+- API Gateway routes requests to Backend (FastAPI)
+- Backend reads/writes leaderboard data to Redis (Sorted Sets)
+- Redis persists data to PostgreSQL for durability
+
+All game/user IDs are case-insensitive and trimmed
   note right of Backend: All game/user IDs are case-insensitive and trimmed
 ```
     │   Backend API (FastAPI) - Port 8000               │
