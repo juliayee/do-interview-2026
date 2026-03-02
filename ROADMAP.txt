@@ -1,0 +1,35 @@
+Roadmap for Global Gaming Leaderboard Service
+
+High-level goals:
+- Provide REST API to submit scores for users per game
+- Serve top-N leaderboards per game
+- Provide user context: rank and nearby entries
+- Real-time-ready design using Redis sorted sets for rankings
+- Dockerized services for easy DigitalOcean deployment
+
+Functional Requirements:
+-Submit Score: Accept a user ID and a score update for different games.
+-Top X Rank: Return the top users (e.g. top 10 or 100) sorted by their score.
+-User Context: Return a specific user’s current rank along with the users immediately
+above and below them (their leaderboard “surroundings”).
+
+Phases:
+1) Design & Roadmap (this file)
+2) Backend: FastAPI service exposing endpoints
+   - POST /games/{game_id}/score
+   - GET /games/{game_id}/top?limit=
+   - GET /games/{game_id}/user/{user_id}/context?radius=
+   
+   - Use Redis Sorted Sets: leaderboard:{game_id}
+   - Score update semantics: keep max score per user
+3) Infra: docker-compose with Redis + backend
+4) Frontend: Next.js TypeScript minimal UI to exercise API
+5) Tests & load considerations: explain scalable Redis setup, persistence
+6) Deploy: Docker images + DigitalOcean app / Droplet + Managed Redis
+
+Notes for production:
+- Use Redis managed instance for reliability and persistence
+- Configure RBAC (role-based access control), TLS and VPC (virtual private cloud)/network on DigitalOcean
+- Use horizontal backend replicas behind a load balancer
+- Use Redis replicas and persistence (AOF/RDB) and backup
+- Monitor latency and use batching for high-frequency score submissions
