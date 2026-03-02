@@ -92,8 +92,8 @@ def root():
             "get_user_context": {
                 "path": "/games/{game_id}/user/{user_id}/context",
                 "method": "GET",
-                "description": "Get user's rank with nearby ranked players",
-                "params": {"radius": "int (1-100, default 2)"}
+                "description": "Get user's rank with immediate above (nearest higher score) and below (nearest lower score)",
+                "params": {}
             }
         },
         "databases": {
@@ -197,12 +197,10 @@ def get_top_leaderboard(game_id: str, limit: int = 10, db: Session = Depends(get
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @app.get("/games/{game_id}/user/{user_id}/context", response_model=UserContext)
-def get_user_context(game_id: str, user_id: str, radius: int = 2, db: Session = Depends(get_db)):
-    """Get user's rank with nearby leaderboard entries"""
+def get_user_context(game_id: str, user_id: str, db: Session = Depends(get_db)):
+    """Get user's rank with immediate above (1st place higher) and below (1st place lower) entries"""
     if not game_id or not user_id:
         raise HTTPException(status_code=400, detail="game_id and user_id are required")
-    if radius <= 0 or radius > 100:
-        raise HTTPException(status_code=400, detail="radius must be between 1 and 100")
     
     try:
         # Get user's score and rank from PostgreSQL
@@ -227,30 +225,30 @@ def get_user_context(game_id: str, user_id: str, radius: int = 2, db: Session = 
         ).count()
         user_rank = rank_query + 1  # Convert to 1-based ranking
         
-        # Get entries above user
+        # Get immediate entry above user (closest score that's higher)
         above_entries = db.query(Score.user_id, Score.score).filter(
             and_(
                 Score.game_id == game_id,
                 Score.score > user_score
             )
-        ).order_by(desc(Score.score)).limit(radius).all()
+        ).order_by(Score.score).limit(1).all()  # Ascending to get closest match above
         
-        # Get entries below user
+        # Get immediate entry below user (closest score that's lower)
         below_entries = db.query(Score.user_id, Score.score).filter(
             and_(
                 Score.game_id == game_id,
                 Score.score < user_score
             )
-        ).order_by(desc(Score.score)).limit(radius).all()
+        ).order_by(desc(Score.score)).limit(1).all()  # Descending to get closest match below
         
         above = []
         for i, (uid, score) in enumerate(above_entries):
-            rank = user_rank - (len(above_entries) - i)
+            rank = user_rank - 1
             above.append(LeaderboardEntry(user_id=uid, score=float(score), rank=rank))
         
         below = []
         for i, (uid, score) in enumerate(below_entries):
-            rank = user_rank + i + 1
+            rank = user_rank + 1
             below.append(LeaderboardEntry(user_id=uid, score=float(score), rank=rank))
         
         return UserContext(

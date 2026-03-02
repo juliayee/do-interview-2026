@@ -25,8 +25,8 @@ def override_get_db():
         db.close()
 
 # Apply overrides
-from main import SessionLocal
-app.dependency_overrides[SessionLocal] = override_get_db
+from main import get_db
+app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
 
@@ -97,18 +97,23 @@ def test_get_top_leaderboard_invalid_limit():
     assert response.status_code == 400
 
 def test_get_user_context():
-    """Test getting user context"""
+    """Test getting user context with immediate above and below"""
     # Submit scores
     scores = [("p1", 100), ("p2", 200), ("p3", 150), ("p4", 250), ("p5", 300)]
     for user_id, score in scores:
         client.post("/games/game1/score", json={"user_id": user_id, "score": score})
     
-    # Get context for p2 (rank 4)
-    response = client.get("/games/game1/user/p2/context?radius=1")
+    # Sorted: p5(300) > p4(250) > p2(200) > p3(150) > p1(100)
+    # Get context for p2 (rank 3, with p4 above and p3 below)
+    response = client.get("/games/game1/user/p2/context")
     assert response.status_code == 200
     data = response.json()
-    assert data["user_rank"] == 2
+    assert data["user_rank"] == 3
     assert data["user_score"] == 200
+    assert len(data["above"]) == 1  # Only immediate above
+    assert len(data["below"]) == 1  # Only immediate below
+    assert data["above"][0]["user_id"] == "p4"  # Rank 2, immediate above
+    assert data["below"][0]["user_id"] == "p3"  # Rank 4, immediate below
 
 def test_get_user_context_not_found():
     """Test user context for non-existent user"""

@@ -14,7 +14,7 @@ Functional Requirements:
 above and below them (their leaderboard “surroundings”).
 
 Phases:
-1) Design & Roadmap (this file)
+1) Design & Roadmap 
 2) Backend: FastAPI service exposing endpoints
    - POST /games/{game_id}/score
    - GET /games/{game_id}/top?limit=
