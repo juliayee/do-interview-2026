@@ -24,14 +24,34 @@ export default function Home() {
   const [userContext, setUserContext] = useState<UserContext | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [topLimit, setTopLimit] = useState(10);
+  const [contextGameId, setContextGameId] = useState('game1');
+
+  // Utility to normalize game name
+  const normalizeGameName = (name: string) => name.trim().toLowerCase();
+
+  // Utility to normalize user ID
+  const normalizeUserId = (id: string) => id.trim().toLowerCase();
 
   const submitScore = async () => {
+    if (!userId.trim()) {
+      setError('User ID field is empty, please enter something');
+      return;
+    }
+    if (!gameId.trim()) {
+      setError('Game Name field is empty, please enter something');
+      return;
+    }
+    if (!score.trim()) {
+      setError('Score field is empty, please enter something');
+      return;
+    }
     try {
       setLoading(true);
       setError('');
-      const response = await axios.post(`${API_BASE}/games/${gameId}/score`, {
-        user_id: userId,
-        score: parseFloat(score)
+      const response = await axios.post(`${API_BASE}/games/${normalizeGameName(gameId)}/score`, {
+        user_id: normalizeUserId(userId),
+        score: Number(score)
       });
       setScore('');
       await fetchTopLeaderboard();
@@ -45,7 +65,7 @@ export default function Home() {
 
   const fetchTopLeaderboard = async () => {
     try {
-      const response = await axios.get(`${API_BASE}/games/${gameId}/top?limit=10`);
+      const response = await axios.get(`${API_BASE}/games/${normalizeGameName(gameId)}/top?limit=${topLimit}`);
       setTopLeaderboard(response.data);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to fetch leaderboard');
@@ -53,174 +73,90 @@ export default function Home() {
   };
 
   const fetchUserContext = async () => {
+    if (!userId.trim()) {
+      setError('User ID field is empty, please enter something');
+      return;
+    }
+    if (!contextGameId.trim()) {
+      setError('Game Name field is empty, please enter something');
+      return;
+    }
     try {
-      const response = await axios.get(`${API_BASE}/games/${gameId}/user/${userId}/context?radius=2`);
+      const response = await axios.get(`${API_BASE}/games/${normalizeGameName(contextGameId)}/user/${normalizeUserId(userId)}/context`);
       setUserContext(response.data);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to fetch user context');
     }
   };
 
-  useEffect(() => {
-    fetchTopLeaderboard();
-  }, [gameId]);
+  // Remove useEffect for fetchTopLeaderboard
 
   return (
-    <div style={styles.container}>
-      <h1>Gaming Leaderboard</h1>
-      
-      <div style={styles.section}>
-        <h2>Submit Score</h2>
-        <div style={styles.form}>
-          <input
-            type="text"
-            placeholder="Game ID"
-            value={gameId}
-            onChange={(e) => setGameId(e.target.value)}
-            style={styles.input}
-          />
-          <input
-            type="text"
-            placeholder="User ID"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            style={styles.input}
-          />
-          <input
-            type="number"
-            placeholder="Score"
-            value={score}
-            onChange={(e) => setScore(e.target.value)}
-            style={styles.input}
-          />
-          <button onClick={submitScore} disabled={loading} style={styles.button}>
-            {loading ? 'Submitting...' : 'Submit'}
-          </button>
-        </div>
-      </div>
-
-      {error && <div style={styles.error}>{error}</div>}
-
-      <div style={styles.section}>
-        <h2>Top 10 Leaderboard</h2>
-        {topLeaderboard.length > 0 ? (
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>User ID</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topLeaderboard.map((entry) => (
-                <tr key={entry.user_id}>
-                  <td>{entry.rank}</td>
-                  <td>{entry.user_id}</td>
-                  <td>{entry.score}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No entries yet</p>
-        )}
-      </div>
-
-      <div style={styles.section}>
-        <h2>User Context</h2>
-        <div style={styles.form}>
-          <input
-            type="text"
-            placeholder="User ID to check"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            style={styles.input}
-          />
-          <button onClick={fetchUserContext} style={styles.button}>
-            Get Context
-          </button>
-        </div>
-        {userContext && (
-          <div style={styles.context}>
-            <p><strong>User Rank:</strong> {userContext.user_rank}</p>
-            <p><strong>User Score:</strong> {userContext.user_score}</p>
-            <h3>Above</h3>
-            {userContext.above.length > 0 ? (
-              <ul>
-                {userContext.above.map((entry) => (
-                  <li key={entry.user_id}>#{entry.rank} {entry.user_id}: {entry.score}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No entries above</p>
-            )}
-            <h3>Below</h3>
-            {userContext.below.length > 0 ? (
-              <ul>
-                {userContext.below.map((entry) => (
-                  <li key={entry.user_id}>#{entry.rank} {entry.user_id}: {entry.score}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No entries below</p>
-            )}
+    <main className="discord-main">
+      <h1 className="discord-title">🎮 Gaming Leaderboard</h1>
+      <div className="discord-container">
+        <section className="discord-card">
+          <h2>Submit Score</h2>
+          <form className="discord-form" onSubmit={e => { e.preventDefault(); submitScore(); }}>
+            <label>
+              <span>Game Name</span>
+              <input className="discord-input" value={gameId} onChange={e => setGameId(e.target.value)} placeholder="e.g. snake, tetris, atari" />
+            </label>
+            <label>
+              <span>User ID</span>
+              <input className="discord-input" value={userId} onChange={e => setUserId(e.target.value)} />
+            </label>
+            <label>
+              <span>Score</span>
+              <input className="discord-input" type="number" value={score} onChange={e => setScore(e.target.value)} />
+            </label>
+            <button className="discord-btn" type="submit" disabled={loading}>Submit</button>
+          </form>
+        </section>
+        <section className="discord-card">
+          <h2>Top Scores</h2>
+          <div className="discord-row">
+            <label>
+              <span>Game Name</span>
+              <input className="discord-input" value={gameId} onChange={e => setGameId(e.target.value)} placeholder="e.g. snake, tetris, atari" />
+            </label>
+            <label>
+              <span>Limit</span>
+              <input className="discord-input" type="number" value={topLimit} min={1} max={100} onChange={e => setTopLimit(Number(e.target.value))} />
+            </label>
+            <button className="discord-btn" onClick={fetchTopLeaderboard}>Refresh</button>
           </div>
-        )}
+          <ol className="discord-list">
+            {topLeaderboard.map(entry => (
+              <li key={entry.user_id} className="discord-list-item">
+                <span className="discord-rank">{entry.rank}.</span> <span className="discord-user">{entry.user_id}</span> <span className="discord-score">— {entry.score}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+        <section className="discord-card">
+          <h2>User Context</h2>
+          <div className="discord-row">
+            <label>
+              <span>Game Name</span>
+              <input className="discord-input" value={contextGameId} onChange={e => setContextGameId(e.target.value)} placeholder="e.g. snake, tetris, atari" />
+            </label>
+            <label>
+              <span>User ID</span>
+              <input className="discord-input" value={userId} onChange={e => setUserId(e.target.value)} />
+            </label>
+            <button className="discord-btn" onClick={fetchUserContext}>Get Context</button>
+          </div>
+          {userContext && (
+            <div className="discord-context">
+              <div><strong>User:</strong> <span className="discord-user">{userContext.user_rank}. {userId}</span> <span className="discord-score">— {userContext.user_score}</span></div>
+              <div><strong>Above:</strong> {userContext.above && userContext.above.length > 0 ? <span className="discord-user">{userContext.above[0].user_id}</span> : 'None'} {userContext.above && userContext.above.length > 0 ? <span className="discord-score">({userContext.above[0].score})</span> : ''}</div>
+              <div><strong>Below:</strong> {userContext.below && userContext.below.length > 0 ? <span className="discord-user">{userContext.below[0].user_id}</span> : 'None'} {userContext.below && userContext.below.length > 0 ? <span className="discord-score">({userContext.below[0].score})</span> : ''}</div>
+            </div>
+          )}
+        </section>
+        {error && <div className="discord-error">{error}</div>}
       </div>
-    </div>
+    </main>
   );
 }
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '20px',
-    fontFamily: 'Arial, sans-serif',
-  } as React.CSSProperties,
-  section: {
-    marginBottom: '30px',
-    border: '1px solid #ddd',
-    padding: '15px',
-    borderRadius: '8px',
-  } as React.CSSProperties,
-  form: {
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '10px',
-    flexWrap: 'wrap',
-  } as React.CSSProperties,
-  input: {
-    padding: '8px 12px',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    fontSize: '14px',
-  } as React.CSSProperties,
-  button: {
-    padding: '8px 20px',
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-  } as React.CSSProperties,
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-  } as React.CSSProperties,
-  error: {
-    color: '#d32f2f',
-    padding: '10px',
-    backgroundColor: '#ffebee',
-    borderRadius: '4px',
-    marginBottom: '10px',
-  } as React.CSSProperties,
-  context: {
-    marginTop: '15px',
-    padding: '10px',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '4px',
-  } as React.CSSProperties,
-};
