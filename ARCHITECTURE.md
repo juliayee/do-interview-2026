@@ -2,22 +2,20 @@
 
 ## System Architecture Diagram
 
+```mermaid
+flowchart TD
+  User[User / Frontend (Next.js)] -->|REST API| Backend[FastAPI Backend]
+  Backend -->|Leaderboard ops| Redis[(Redis Sorted Sets)]
+  Backend -->|Persistence| Postgres[(PostgreSQL)]
+  Redis -->|Cache| Backend
+  Backend -->|Immediate neighbors| Redis
+  Backend -->|Max score update| Redis
+  Backend -->|Health check| Redis
+  Backend -->|Health check| Postgres
+  Backend -->|Push leaderboard| Frontend
+  Frontend -->|Display leaderboard| User
+  note right of Backend: User context endpoint returns only immediate above/below scores\nNo radius parameter
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Client Browser                              │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │ HTTP/HTTPS
-                               ▼
-         ┌─────────────────────────────────────────┐
-         │     Frontend (Next.js TypeScript)       │
-         │  - User submission form                 │
-         │  - Top 10 leaderboard display           │
-         │  - User context (rank + surroundings)   │
-         │  Port: 3000                             │
-         └──────────────┬──────────────────────────┘
-                        │ REST API Calls (axios)
-                        ▼
-    ┌────────────────────────────────────────────────────┐
     │   Backend API (FastAPI) - Port 8000               │
     │                                                    │
     │  POST   /games/{game_id}/score                    │
